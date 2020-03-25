@@ -26,30 +26,30 @@ These instructions have been verified as working on a Synology DS1513+ running D
 
 ## DNS Service Setup
 1. Log in as adminstrator to the Synology DSM (administration interface)
-1. In the Package Center, open the "DNS Server" app.
-1. Select the "Zones" tab and create a new Master Zone.
-1. Fill in the following fields as follows:
+2. In the Package Center, open the "DNS Server" app.
+3. Select the "Zones" tab and create a new Master Zone.
+4. Fill in the following fields as follows:
     * Domain Type: Forward Zone
     * Domain Name: `null.zone.file`
     * Master DNS Server: `<IP Address of your Synology Device>`
     * Serial Format: Date (YYYYMMDDNN)
-1. Enable "Limit zone update" but do __not__ set any values for it.
-1. (Optional) Set a limit on the Zone Transfer rules to restrict it to your LAN.
-1. (Optional) Set a limit on the source IP rules to restrict it to your LAN.
+5. Enable "Limit zone update" but do __not__ set any values for it.
+6. (Optional) Set a limit on the Zone Transfer rules to restrict it to your LAN.
+7. (Optional) Set a limit on the source IP rules to restrict it to your LAN.
 
 The Domain Name _must_ be `null.zone.file` and the Serial Format _must_ be set as `Date` as that is what the updater script requires. The blocked zones must reference a static zone configuration file and so the "Limit zone update" must be enabled with no values so that the resulting configuration file is generated with the line `allow-update {none;};`. The Master DNS Server should have the same IP address as your Synology device. (Don't fret over this; it will be overwritten later.)
 
 ## Script Installation
 1. SSH as the administrator to the Synology device
     * `ssh admin@synology.example.com`
-1. Navigate to the appropriate directory
+2. Navigate to the appropriate directory
     * `cd /usr/local/bin`
-1. Download the `ad-blocker.sh` script
+3. Download the `ad-blocker.sh` script
     * `sudo wget -O ad-blocker.sh "https://raw.githubusercontent.com/steventblack/ad-blocker/master/ad-blocker.sh"`
-1. Change the owner and permissions of the script
+4. Change the owner and permissions of the script
     * `sudo chown root:root ad-blocker.sh`
     * `sudo chmod +x ad-blocker.sh`
-1. Verify the script executes properly
+5. Verify the script executes properly
     * `sudo ./ad-blocker.sh`
     * Verify `/var/packages/DNSServer/target/named/etc/zone/data/ad-blocker.db` exists and has ~200k of data
     * Verify `/var/packages/DNSServer/target/named/etc/zone/data/null.zone.file` has the line `include "/etc/zone/data/ad-blocker.db";`
@@ -59,18 +59,18 @@ The ad-blocking functionality should now be in effect. You can test the effectiv
 
 ## Automated Block List Updating
 1. Log in as administrator to the Synology DSM (administration interface)
-1. Open up the "Control Panel" app.
-1. Select the "Task Scheduler" service.
-1. Create a new Scheduled Task for a user-defined script.
-1. For the "General" tab, fill in the fields as follows:
+2. Open up the "Control Panel" app.
+3. Select the "Task Scheduler" service.
+4. Create a new Scheduled Task for a user-defined script.
+5. For the "General" tab, fill in the fields as follows:
     * Task: `Ad-blocker Update`
     * User: `root`
     * Enabled: (checked)
-1. For the "Schedule" tab, fill in fields as follows:
+6. For the "Schedule" tab, fill in fields as follows:
     * Run on the following days: Daily
     * First run time: `03:20`
     * Frequency: once a day
-1. For the "Task Settings" tab, fill in the fields as follow:
+7. For the "Task Settings" tab, fill in the fields as follow:
     * Send run details by email: `<your email here>`
     * User defined script: `sudo /usr/local/bin/ad-blocker.sh`
 
@@ -84,14 +84,14 @@ A user-defined blacklist functionality is available to add custom domains into t
 
 1. SSH as the administrator to the Synology device
     * `ssh admin@synology.example.com`
-1. Navigate to the appropriate directory
+2. Navigate to the appropriate directory
     * `cd /usr/local/etc`
-1. Open `ad-blocker-bl.conf` for editing
+3. Open `ad-blocker-bl.conf` for editing
     * `sudo vi ad-blocker-bl.conf`
-1. Add additional fully-qualified domains (one per line) and save the file
+4. Add additional fully-qualified domains (one per line) and save the file
     * Example: `ad.example.com`
     * Comments are indicated by a `#` as the first character on a line
-1. Re-run the `ad-blocker.sh` script to pick up the changes (or wait until next scheduled time)
+5. Re-run the `ad-blocker.sh` script to pick up the changes (or wait until next scheduled time)
     * `cd /usr/local/bin`
     * `sudo ./ad-blocker.sh`
 
@@ -100,19 +100,25 @@ The user-defined whitelist allows specified domains to continue to work despite 
 
 1. SSH as the administrator to the Synology device
     * `ssh admin@synology.example.com`
-1. Navigate to the appropriate directory
+2. Navigate to the appropriate directory
     * `cd /usr/local/etc`
-1. Open `ad-blocker-wl.conf` for editing
+3. Open `ad-blocker-wl.conf` for editing
     * `sudo vi ad-blocker-wl.conf`
-1. Add additional fully-qualified domains (one per line) and save the file
+4. Add additional fully-qualified domains (one per line) and save the file
     * Example: `ad.example.com`
     * Comments are indicated by a `#` as the first character on a line
-1. Re-run the `ad-blocker.sh` script to pick up the changes (or wait until next scheduled time)
+5. Re-run the `ad-blocker.sh` script to pick up the changes (or wait until next scheduled time)
     * `cd /usr/local/bin`
     * `sudo ./ad-blocker.sh`
 
-## Caveats
-This solution works well for blocking the vast majority of ad providers. It should help speed up page rendering as well as provide a degree of privacy and security to your devices. However, it is not a panacea and you should continue to practice safe browsing habits. In particular, remember that this solution only applies to devices _within_ the LAN and so mobile devices may lose any protections it offers when using a different network.
-
-## Thanks
-This solution utilizes the block list provided by [yoyo.org](http://pgl.yoyo.org/adservers/). A big thanks goes out to them for their hard work and continued maintainence.
+### Блокировка MS Office
+127.0.0.1 officeclient.microsoft.com
+127.0.0.1 login.windows.net
+127.0.0.1 nexus.officeapps.live.com
+127.0.0.1 odc.officeapps.live.com
+127.0.0.1 templateservice.office.com
+## Блокировка AdobeAcrobat
+127.0.0.1 acroipm2.adobe.com
+127.0.0.1 armmf.adobe.com
+## Блокировка обновления Windows Update
+127.0.0.1 ctldl.windowsupdate.com
